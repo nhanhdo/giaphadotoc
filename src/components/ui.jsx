@@ -22,7 +22,11 @@ export function Modal({ title, icon, onClose, children, footer, width = 'max-w-l
           </button>
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">{children}</div>
-        {footer && <div className="safe-bottom flex flex-wrap justify-end gap-2 border-t border-paper-dark bg-paper/70 px-4 py-3 sm:px-6">{footer}</div>}
+        {footer && (
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-paper-dark bg-paper/70 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:pb-3">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
