@@ -78,20 +78,24 @@ export function buildPrintableSvg({ index, rootId = null, title = DEFAULT_PRINT_
 
   // Chữ chạy theo cung của mặt cuốn thư, căn giữa theo chiều dài cung.
   const panelWidth = bannerWidth * 0.24;
-  const arcEdgeY = bannerTop + bannerHeight * 0.63;
-  const arcControlY = bannerTop + bannerHeight * 0.43;
+  const titleSize = bannerWidth * 0.031;
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `700 ${titleSize}px ${SERIF}`;
+  const metrics = ctx.measureText(title);
+  const titleScale = metrics.width > panelWidth ? panelWidth / metrics.width : 1;
+  const inkCenterOffset = (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) * titleScale / 2;
+  const arcCenterY = bannerTop + bannerHeight * 0.44 + inkCenterOffset;
+  const arcRise = bannerHeight * 0.1;
+  const arcEdgeY = arcCenterY + arcRise;
+  const arcControlY = arcCenterY - arcRise;
   svg.append('defs').append('path')
     .attr('id', 'print-title-arc')
     .attr('d', `M${(W - panelWidth) / 2},${arcEdgeY} Q${W / 2},${arcControlY} ${(W + panelWidth) / 2},${arcEdgeY}`);
 
-  const titleSize = bannerWidth * 0.031;
-  const ctx = document.createElement('canvas').getContext('2d');
-  ctx.font = `700 ${titleSize}px ${SERIF}`;
-  const headingWidth = ctx.measureText(title).width;
   svg.append('text')
     .attr('text-anchor', 'middle')
     .attr('font-family', SERIF).attr('font-weight', 700)
-    .attr('font-size', headingWidth > panelWidth ? titleSize * panelWidth / headingWidth : titleSize)
+    .attr('font-size', titleSize * titleScale)
     .attr('fill', '#ffe396')
     .append('textPath').attr('href', '#print-title-arc').attr('startOffset', '50%')
     .text(title);
