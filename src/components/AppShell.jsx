@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  Bell, ChevronDown, ChevronLeft, Flower2, GitCompare, Inbox, KeyRound, LayoutDashboard, LogOut, Menu, Network, Printer, Search, ShieldCheck,
+  Bell, ChevronDown, ChevronLeft, Flower2, GitBranch, GitCompare, Inbox, KeyRound, LayoutDashboard, LogOut, Menu, Network, Printer, Search, ShieldCheck,
   Users, X,
 } from 'lucide-react';
 import { ROLE_LABEL, useApp } from '../context.js';
@@ -15,6 +15,7 @@ export const NAV = [
   { path: '/', label: 'Tổng quan', short: 'Tổng quan', icon: LayoutDashboard },
   { path: '/tree', label: 'Cây gia phả', short: 'Cây', icon: Network },
   { path: '/members', label: 'Thành viên', short: 'Thành viên', icon: Users },
+  { path: '/branches', label: 'Chi / Nhánh', icon: GitBranch },
   { path: '/memorials', label: 'Ngày giỗ', short: 'Ngày giỗ', icon: Flower2 },
   { path: '/kinship', label: 'Tính xưng hô', icon: GitCompare },
   { action: 'export', label: 'Xuất bản in', icon: Printer },

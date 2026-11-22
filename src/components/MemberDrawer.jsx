@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Baby, BookOpen, Calendar, Crosshair, Flower2, GitCompare, HeartHandshake, Home, Loader2, MapPin, Pencil, Trash2, UserPlus, Users, X,
+  Baby, BookOpen, Calendar, Crosshair, Flower2, GitBranch, GitCompare, HeartHandshake, Home, Loader2, MapPin, Pencil, Printer, Trash2, UserPlus, Users, X,
 } from 'lucide-react';
 import { upcomingMemorials } from '@shared/lunar.js';
 import { api } from '../api.js';
+import { useApp } from '../context.js';
 import { Badge, Button } from './ui.jsx';
 import { GENDER_LABEL, MARRIAGE_STATUS, fmtDateOrYear, fmtLunar, fmtSolar, lifeSpan, wifeRankLabel } from '../lib/format.js';
 
@@ -73,6 +74,7 @@ function ActionButton({ icon: Icon, label, onClick, tone = 'default' }) {
 }
 
 export default function MemberDrawer({ memberId, user, reloadKey, onClose, onNavigate, onShowOnTree, onAction, onKinship }) {
+  const { branches, can, openBranchForm, openExport } = useApp();
   const [m, setM] = useState(null);
   const [error, setError] = useState(null);
 
@@ -104,6 +106,8 @@ export default function MemberDrawer({ memberId, user, reloadKey, onClose, onNav
   const canWrite = user?.permissions?.includes('member:write');
   const canSuggest = !canWrite && user && m?.canSuggest;
 
+  const canUseBranchActions = m?.id === memberId && m.isLineage;
+  const isFounder = branches.some((branch) => branch.founderId === m?.id);
   const male = m?.gender === 'male';
 
   return (
@@ -160,6 +164,10 @@ export default function MemberDrawer({ memberId, user, reloadKey, onClose, onNav
           <div className="no-scrollbar flex justify-start gap-0.5 overflow-x-auto border-b border-[#eee5d6] px-2 py-1.5 sm:flex-wrap sm:justify-center sm:px-3">
             {m.path && <ActionButton icon={Crosshair} label="Trên cây" onClick={() => onShowOnTree(m.id)} />}
             <ActionButton icon={GitCompare} label="Xưng hô" onClick={() => onKinship(m)} />
+            {canUseBranchActions && <ActionButton icon={Printer} label="In nhánh" onClick={() => openExport({ selectedId: m.id })} />}
+            {canUseBranchActions && !isFounder && can('branch:write') && (
+              <ActionButton icon={GitBranch} label={m.branch?.branchId ? 'Tách nhánh' : 'Khởi chi'} onClick={() => openBranchForm(m)} />
+            )}
             {canWrite && (
               <>
                 <ActionButton icon={Pencil} label="Sửa" onClick={() => onAction('edit', m)} />

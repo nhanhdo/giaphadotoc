@@ -17,6 +17,8 @@ import TreePage from './pages/TreePage.jsx';
 import MembersPage from './pages/MembersPage.jsx';
 import MemorialsPage from './pages/MemorialsPage.jsx';
 import AccountsPage from './pages/AccountsPage.jsx';
+import BranchesPage from './pages/BranchesPage.jsx';
+import BranchFormModal from './components/BranchFormModal.jsx';
 
 const ExportModal = lazy(() => import('./components/ExportModal.jsx'));
 
@@ -85,6 +87,7 @@ function AuthedApp({ user, clanName, onLogout }) {
   const [kinship, setKinship] = useState(null);
   const [exportOpts, setExportOpts] = useState(null);
   const [form, setForm] = useState(null);
+  const [branchForm, setBranchForm] = useState(null);
 
   const index = useMemo(() => (treeData ? buildIndex(treeData) : null), [treeData]);
   const can = useCallback((p) => !!user.permissions?.includes(p), [user]);
@@ -166,6 +169,9 @@ function AuthedApp({ user, clanName, onLogout }) {
       },
       openKinship: (a, b = null) => setKinship({ a, b }),
       openExport: (opts = {}) => setExportOpts(opts),
+      openBranchForm: (founder = null) => {
+        if (can('branch:write')) setBranchForm({ founder });
+      },
     }),
     [user, clanName, index, branches, memorials, reloadKey, lastDeletedId, can, reloadTree, reloadAll, afterChange],
   );
@@ -187,6 +193,7 @@ function AuthedApp({ user, clanName, onLogout }) {
   else if (!index)
     page = <LoadingSkeleton />;
   else if (route === '/members') page = <MembersPage />;
+  else if (route === '/branches') page = <BranchesPage />;
   else if (route === '/memorials') page = <MemorialsPage />;
   else if (route === '/accounts') page = <AccountsPage />;
   else if (route === '/kinship')
@@ -241,8 +248,21 @@ function AuthedApp({ user, clanName, onLogout }) {
       )}
       {exportOpts && index && (
         <Suspense fallback={<div role="status" className="fixed inset-0 z-50 grid place-items-center bg-ink/40 text-white">Đang tải bản xem trước…</div>}>
-          <ExportModal index={index} currentRootId={null} selectedId={exportOpts.selectedId ?? null} onClose={() => setExportOpts(null)} />
+          <ExportModal index={index} currentRootId={exportOpts.currentRootId ?? null} selectedId={exportOpts.selectedId ?? null} onClose={() => setExportOpts(null)} />
         </Suspense>
+      )}
+      {branchForm && (
+        <BranchFormModal
+          founder={branchForm.founder}
+          onClose={() => setBranchForm(null)}
+          onSaved={(branch) => {
+            const memberCount = (index.descCount.get(branch.founderId) ?? 0) + 1;
+            setBranches((items) => items.some((item) => item.id === branch.id) ? items : [...items, { ...branch, memberCount }]);
+            setBranchForm(null);
+            afterChange();
+            navigate('/branches');
+          }}
+        />
       )}
       {form && (
         <MemberFormModal

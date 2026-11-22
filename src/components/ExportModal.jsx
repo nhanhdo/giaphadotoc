@@ -39,7 +39,7 @@ const TONE = {
 
 export default function ExportModal({ index, currentRootId, selectedId, onClose }) {
   const selected = selectedId ? index.byId.get(selectedId) : null;
-  const [scope, setScope] = useState(currentRootId ? 'view' : 'all');
+  const [scope, setScope] = useState(() => currentRootId ? 'view' : selected?.isLineage ? 'selected' : 'all');
   const [format, setFormat] = useState('pdf');
   const [paper, setPaper] = useState('A0');
   const [orientation, setOrientation] = useState('auto');
@@ -158,7 +158,7 @@ export default function ExportModal({ index, currentRootId, selectedId, onClose 
             <p className="flex items-start gap-2 rounded-2xl bg-paper px-4 py-3 text-xs leading-relaxed text-muted">
               <Users size={15} className="mt-0.5 shrink-0 text-lacquer-600" />
               <span>
-                In <b className="text-ink">toàn bộ gia phả</b>. Muốn in riêng một nhánh, hãy mở chi tiết người đứng đầu nhánh trên cây rồi chọn Xuất bản in.
+                In <b className="text-ink">toàn bộ gia phả</b>. Muốn in riêng một nhánh, hãy mở chi tiết người đứng đầu nhánh rồi chọn In nhánh, hoặc mở trang Chi / Nhánh.
               </span>
             </p>
           )}

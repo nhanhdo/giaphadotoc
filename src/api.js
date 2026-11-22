@@ -90,6 +90,7 @@ export const api = {
   deleteMarriage: (id) => request('DELETE', `/relationships/marriages/${id}`),
 
   branches: () => request('GET', '/branches'),
+  createBranch: (body) => request('POST', '/branches', body),
 
   suggestions: (status) => request('GET', `/suggestions${qs({ status })}`),
   createSuggestion: (body) => request('POST', '/suggestions', body),
