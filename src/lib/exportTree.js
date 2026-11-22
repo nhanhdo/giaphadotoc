@@ -76,17 +76,25 @@ export function buildPrintableSvg({ index, rootId = null, title = DEFAULT_PRINT_
     .attr('width', bannerWidth).attr('height', bannerHeight)
     .attr('href', printHeader);
 
-  const heading = svg.append('text')
-    .attr('x', W / 2).attr('y', bannerTop + bannerHeight * 0.5)
-    .attr('text-anchor', 'middle').attr('dominant-baseline', 'central')
-    .attr('font-family', SERIF).attr('font-weight', 700)
-    .attr('font-size', bannerWidth * 0.028).attr('fill', '#ffe396')
-    .text(title);
-  const ctx = document.createElement('canvas').getContext('2d');
-  ctx.font = `700 ${heading.attr('font-size')}px ${SERIF}`;
-  const headingWidth = ctx.measureText(title).width;
+  // Chữ chạy theo cung của mặt cuốn thư, căn giữa theo chiều dài cung.
   const panelWidth = bannerWidth * 0.24;
-  if (headingWidth > panelWidth) heading.attr('font-size', Number(heading.attr('font-size')) * panelWidth / headingWidth);
+  const arcEdgeY = bannerTop + bannerHeight * 0.63;
+  const arcControlY = bannerTop + bannerHeight * 0.43;
+  svg.append('defs').append('path')
+    .attr('id', 'print-title-arc')
+    .attr('d', `M${(W - panelWidth) / 2},${arcEdgeY} Q${W / 2},${arcControlY} ${(W + panelWidth) / 2},${arcEdgeY}`);
+
+  const titleSize = bannerWidth * 0.031;
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `700 ${titleSize}px ${SERIF}`;
+  const headingWidth = ctx.measureText(title).width;
+  svg.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('font-family', SERIF).attr('font-weight', 700)
+    .attr('font-size', headingWidth > panelWidth ? titleSize * panelWidth / headingWidth : titleSize)
+    .attr('fill', '#ffe396')
+    .append('textPath').attr('href', '#print-title-arc').attr('startOffset', '50%')
+    .text(title);
 
   const captionY = bannerTop + bannerHeight + unit * 2.7;
   if (subtitle) {

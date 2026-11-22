@@ -63,6 +63,22 @@ export function ancestorsOf(index, id) {
   return out;
 }
 
+export function parentBranchOf(index, byFounder, founderId) {
+  const parentId = ancestorsOf(index, founderId).find((id) => byFounder.has(id));
+  return byFounder.get(parentId) ?? null;
+}
+
+/** Đồng bộ phân cấp hiển thị với quy tắc gán chi theo tổ tiên gần nhất. */
+export function resolveBranchHierarchy(index, branches) {
+  if (!index) return branches;
+  const byFounder = new Map(branches.map((branch) => [branch.founderId, branch]));
+  return branches.map((branch) => {
+    if (!index.byId.has(branch.founderId)) return branch;
+    const parent = parentBranchOf(index, byFounder, branch.founderId);
+    return { ...branch, parentId: parent?.id ?? null };
+  });
+}
+
 /** Id của nút trên cây chứa người này (dâu/rể nằm trong thẻ của người phối ngẫu) */
 export function nodeIdFor(index, id) {
   const m = index.byId.get(id);

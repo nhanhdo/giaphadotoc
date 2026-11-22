@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { GitBranch } from 'lucide-react';
 import { api } from '../api.js';
 import { useApp } from '../context.js';
-import { ancestorsOf } from '../lib/treeModel.js';
+import { parentBranchOf } from '../lib/treeModel.js';
 import SearchBox from './SearchBox.jsx';
 import { Button, ErrorBox, Field, Modal, inputCls } from './ui.jsx';
 
@@ -17,7 +17,7 @@ export default function BranchFormModal({ founder: initialFounder, onClose, onSa
   const candidates = useMemo(() => ({
     members: index.members.filter((member) => member.isLineage && !byFounder.has(member.id)),
   }), [index, byFounder]);
-  const parent = founder && ancestorsOf(index, founder.id).map((id) => byFounder.get(id)).find(Boolean);
+  const parent = founder && parentBranchOf(index, byFounder, founder.id);
   const validFounder = founder && index.byId.get(founder.id)?.isLineage && !byFounder.has(founder.id);
 
   const submit = async (event) => {

@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { Loader2 } from 'lucide-react';
 import { api, auth } from './api.js';
 import { AppContext } from './context.js';
-import { buildIndex } from './lib/treeModel.js';
+import { buildIndex, resolveBranchHierarchy } from './lib/treeModel.js';
 import { navigate, useHashRoute } from './lib/router.js';
 import AppShell from './components/AppShell.jsx';
 import Seal from './components/Seal.jsx';
@@ -76,7 +76,7 @@ function AuthedApp({ user, clanName, onLogout }) {
   const route = useHashRoute();
   const [treeData, setTreeData] = useState(null);
   const [loadError, setLoadError] = useState(null);
-  const [branches, setBranches] = useState([]);
+  const [branchRecords, setBranches] = useState([]);
   const [memorials, setMemorials] = useState(null);
   const [suggestions, setSuggestions] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -90,6 +90,7 @@ function AuthedApp({ user, clanName, onLogout }) {
   const [branchForm, setBranchForm] = useState(null);
 
   const index = useMemo(() => (treeData ? buildIndex(treeData) : null), [treeData]);
+  const branches = useMemo(() => resolveBranchHierarchy(index, branchRecords), [index, branchRecords]);
   const can = useCallback((p) => !!user.permissions?.includes(p), [user]);
 
   const reloadTree = useCallback(async () => {

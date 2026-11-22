@@ -153,6 +153,7 @@ export default function ExportModal({ index, currentRootId, selectedId, onClose 
                   </Choice>
                 ))}
               </div>
+              {rootId != null && <p className="mt-2 text-xs text-muted">Bản in gồm người đứng đầu, hậu duệ trên cây và thông tin vợ/chồng đi kèm.</p>}
             </Section>
           ) : (
             <p className="flex items-start gap-2 rounded-2xl bg-paper px-4 py-3 text-xs leading-relaxed text-muted">

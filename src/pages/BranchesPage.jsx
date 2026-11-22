@@ -11,7 +11,7 @@ export default function BranchesPage() {
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-serif text-2xl font-bold text-ink">Chi / Nhánh</h1>
-            <p className="mt-1 text-sm text-muted">Tra cứu người khởi chi, xem trên cây và in từng nhánh.</p>
+            <p className="mt-1 text-sm text-muted">Số người gồm người khởi chi và hậu duệ trong họ, kể cả các nhánh con.</p>
           </div>
           {can('branch:write') && (
             <Button onClick={() => openBranchForm()}><Plus size={16} /> Khởi chi / Tách nhánh</Button>
