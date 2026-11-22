@@ -54,7 +54,32 @@ export function generationRows(nodes) {
   return [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([y, generation]) => ({ y, generation }));
 }
 
-const truncate = (s, n) => (s && s.length > n ? `${s.slice(0, n - 1)}…` : (s ?? ''));
+let textContext;
+const graphemes = new Intl.Segmenter('vi', { granularity: 'grapheme' });
+
+function fitCardText(selection, value, width, suffix = '') {
+  const fullText = (value ?? '') + suffix;
+  textContext ??= document.createElement('canvas').getContext('2d');
+  textContext.font = [
+    selection.attr('font-style') || 'normal',
+    selection.attr('font-weight') || '400',
+    `${selection.attr('font-size')}px`,
+    selection.attr('font-family'),
+  ].join(' ');
+  if (textContext.measureText(fullText).width <= width) return selection.text(fullText);
+
+  const segments = [...graphemes.segment(value ?? '')];
+  let low = 0;
+  let high = segments.length;
+  const shortened = (count) => `${value.slice(0, segments[count]?.index ?? value.length).trimEnd()}…${suffix}`;
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    if (textContext.measureText(shortened(mid)).width <= width) low = mid;
+    else high = mid - 1;
+  }
+  selection.text(shortened(low)).append('title').text(fullText);
+  return selection;
+}
 
 export const PALETTE = {
   male: { accent: '#2f5d8a', tint: '#e8eff7', ring: '#9db7d3', text: '#24496d' },
@@ -106,15 +131,16 @@ export function drawCard(g, d, { interactive = true } = {}) {
 
   // Tên + dòng phụ (đời đã hiển thị ở cột "Đời" bên trái)
   const tx = x0 + 68;
+  const textWidth = W / 2 - tx - 14;
   near.append('text').attr('x', tx).attr('y', y0 + 38).attr('font-family', SERIF).attr('font-size', 15).attr('font-weight', 700)
-    .attr('fill', dead ? '#4a3f35' : INK).text(truncate(m.fullName, 20));
+    .attr('fill', dead ? '#4a3f35' : INK).call(fitCardText, m.fullName, textWidth);
   const alias = [m.courtesyName && `Tự ${m.courtesyName}`, m.penName && `Hiệu ${m.penName}`].filter(Boolean).join(' · ');
   const life = lifeSpan(m);
   near.append('text').attr('x', tx).attr('y', y0 + 56).attr('font-family', FONT).attr('font-size', 11).attr('fill', MUTED)
-    .text(truncate(life || alias || (m.isLineage ? 'Người trong họ' : m.gender === 'female' ? 'Dâu trong họ' : 'Rể trong họ'), 27));
+    .call(fitCardText, life || alias || (m.isLineage ? 'Người trong họ' : m.gender === 'female' ? 'Dâu trong họ' : 'Rể trong họ'), textWidth);
   if (alias && life)
     near.append('text').attr('x', tx).attr('y', y0 + 71).attr('font-family', SERIF).attr('font-style', 'italic').attr('font-size', 10.5)
-      .attr('fill', '#9a8b7a').text(truncate(alias, 28));
+      .attr('fill', '#9a8b7a').call(fitCardText, alias, textWidth);
 
   // Chân thẻ: vợ/chồng & ngày giỗ trên nền giấy
   const fy = y0 + 84;
@@ -122,7 +148,7 @@ export function drawCard(g, d, { interactive = true } = {}) {
   const sp = d.data.spouses || [];
   if (sp.length) {
     const more = sp.length > 1 ? ` +${sp.length - 1}` : '';
-    lines.push({ text: `${male ? 'Vợ' : 'Chồng'}: ${truncate(sp[0].member.fullName, 24 - more.length)}${more}`, color: '#6b5d4f' });
+    lines.push({ text: `${male ? 'Vợ' : 'Chồng'}: ${sp[0].member.fullName}`, suffix: more, color: '#6b5d4f' });
   }
   if (dead && m.deathLunarDay) lines.push({ text: `Giỗ ${m.deathLunarDay}/${m.deathLunarMonth} Âm lịch`, color: '#922b25', weight: 600 });
   if (lines.length) {
@@ -133,16 +159,18 @@ export function drawCard(g, d, { interactive = true } = {}) {
     const startY = lines.length === 1 ? fy + 26 : fy + 19;
     lines.forEach((l, i) => {
       near.append('text').attr('x', x0 + 18).attr('y', startY + i * 15).attr('font-family', FONT).attr('font-size', 10.5)
-        .attr('font-weight', l.weight ?? 400).attr('fill', l.color).text(l.text);
+        .attr('font-weight', l.weight ?? 400).attr('fill', l.color).call(fitCardText, l.text, W - 32, l.suffix);
     });
   }
 
   // ---------- Bản rút gọn (xa) – chỉ cho giao diện tương tác (bản in không có CSS để ẩn/hiện) ----------
-  const far = interactive ? g.append('g').attr('class', 'lod-far') : d3.create('svg:g');
-  far.append('text').attr('x', 6).attr('y', -4).attr('text-anchor', 'middle').attr('font-family', SERIF).attr('font-size', 26)
-    .attr('font-weight', 700).attr('fill', dead ? '#4a3f35' : INK).text(truncate(m.fullName.split(/\s+/).slice(-2).join(' '), 14));
-  far.append('text').attr('x', 6).attr('y', 30).attr('text-anchor', 'middle').attr('font-family', FONT).attr('font-size', 18)
-    .attr('font-weight', 600).attr('fill', C.accent).text(`Đời ${m.generation}`);
+  if (interactive) {
+    const far = g.append('g').attr('class', 'lod-far');
+    far.append('text').attr('x', 6).attr('y', -4).attr('text-anchor', 'middle').attr('font-family', SERIF).attr('font-size', 26)
+      .attr('font-weight', 700).attr('fill', dead ? '#4a3f35' : INK).call(fitCardText, m.fullName.trim().split(/\s+/).slice(-2).join(' '), W - 40);
+    far.append('text').attr('x', 6).attr('y', 30).attr('text-anchor', 'middle').attr('font-family', FONT).attr('font-size', 18)
+      .attr('font-weight', 600).attr('fill', C.accent).text(`Đời ${m.generation}`);
+  }
 
   // Băng tang: dải đen chéo góc trên bên phải
   if (dead) {

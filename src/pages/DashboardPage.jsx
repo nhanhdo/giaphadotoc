@@ -68,7 +68,7 @@ export default function DashboardPage({ suggestions }) {
               <p className="text-sm font-medium text-muted">
                 {weekdayVN(t)}, {t.day} tháng {t.month}, {t.year}
               </p>
-              <h1 className="mt-1 font-serif text-[22px] leading-snug font-bold text-ink sm:text-[28px]">
+              <h1 className="mt-1 font-serif text-[22px] leading-snug font-bold break-words text-ink sm:text-[28px]">
                 {greeting()}, <span className="text-lacquer-600">{user.displayName}</span>
               </h1>
               <p className="mt-1 text-sm text-muted">Uống nước nhớ nguồn – chúc gia đạo an khang, con cháu hiếu thảo.</p>
@@ -76,17 +76,19 @@ export default function DashboardPage({ suggestions }) {
                 Âm lịch: {l.day}/{l.month}
                 {l.leap ? ' nhuận' : ''} năm {canChiYear(l.year)}
               </p>
-              <div className="no-scrollbar -mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
-                {actions.map((a) => (
+              <div className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                {actions.map((a, i) => (
                   <button
                     key={a.label}
                     onClick={a.onClick}
-                    className="group flex shrink-0 items-center gap-2 rounded-full border border-white bg-white/80 px-3.5 py-2 text-[13px] font-medium text-ink shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-lacquer-200 hover:bg-white hover:text-lacquer-700 hover:shadow-md active:translate-y-0"
+                    className={`flex min-h-11 min-w-0 items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs font-medium leading-snug transition sm:px-3.5 sm:text-[13px] ${
+                      i === 0
+                        ? 'border-lacquer-700 bg-lacquer-700 text-white hover:bg-lacquer-800'
+                        : 'border-lacquer-100 bg-white/80 text-ink hover:border-lacquer-200 hover:bg-white hover:text-lacquer-800'
+                    }`}
                   >
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-lacquer-50 text-lacquer-600 transition group-hover:rotate-[-8deg] group-hover:bg-lacquer-500 group-hover:text-white">
-                      <a.icon size={14} />
-                    </span>
-                    {a.label}
+                    <a.icon size={16} aria-hidden="true" className={`shrink-0 ${i === 0 ? 'text-white' : 'text-lacquer-700'}`} />
+                    <span>{a.label}</span>
                   </button>
                 ))}
               </div>

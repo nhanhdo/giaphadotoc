@@ -131,63 +131,73 @@ export default function TreePage({ request, visible = true }) {
       />
 
       {/* Thanh lọc nổi */}
-      <div className="glass no-scrollbar absolute top-3 right-3 left-12 z-20 flex items-center gap-1 overflow-x-auto rounded-2xl p-1.5 sm:top-4 sm:right-auto sm:left-[76px]">
-        <FilterSelect
-          icon={GitBranch}
-          value={rootId ?? ''}
-          active={rootId != null}
-          onChange={(v) => {
-            setRootId(v ? Number(v) : null);
-            refit();
-          }}
-          title="Lọc theo chi / nhánh"
-        >
-          <option value="">Tất cả các chi</option>
-          {branches.map((b) => (
-            <option key={b.id} value={b.founderId}>
-              {b.parentId ? '  └ ' : ''}
-              {b.name} · {b.memberCount} người
-            </option>
-          ))}
-        </FilterSelect>
-        <span className="h-6 w-px bg-line" />
-        <FilterSelect icon={Sparkles} value={dimGeneration ?? ''} active={dimGeneration != null} onChange={(v) => setDimGeneration(v ? Number(v) : null)} title="Làm nổi bật một đời">
-          <option value="">Nổi bật đời…</option>
-          {index.generations.map((g) => (
-            <option key={g} value={g}>
-              Nổi bật đời {g}
-            </option>
-          ))}
-        </FilterSelect>
-        <FilterSelect
-          icon={Layers}
-          value={maxGeneration ?? ''}
-          active={maxGeneration != null}
-          onChange={(v) => {
-            setMaxGeneration(v ? Number(v) : null);
-            refit();
-          }}
-          title="Chỉ hiển thị tới đời"
-        >
-          <option value="">Hiện mọi đời</option>
-          {index.generations.map((g) => (
-            <option key={g} value={g}>
-              Hiện tới đời {g}
-            </option>
-          ))}
-        </FilterSelect>
-        {filtersActive && (
-          <button
-            onClick={() => {
-              setRootId(null);
-              setDimGeneration(null);
-              setMaxGeneration(null);
+      <div className="pointer-events-none absolute top-3 right-3 left-[52px] z-20 flex min-w-0 flex-col items-start gap-2 sm:top-4 sm:right-5 sm:left-[76px]">
+        <div role="group" aria-label="Bộ lọc cây gia phả" className="glass pointer-events-auto flex max-w-full flex-wrap items-center gap-1 rounded-2xl p-1.5">
+          <FilterSelect
+            icon={GitBranch}
+            value={rootId ?? ''}
+            active={rootId != null}
+            onChange={(v) => {
+              setRootId(v ? Number(v) : null);
               refit();
             }}
-            className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-medium text-lacquer-700 transition hover:bg-lacquer-50"
+            title="Lọc theo chi / nhánh"
           >
-            <X size={13} /> Bỏ lọc
-          </button>
+            <option value="">Tất cả các chi</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.founderId}>
+                {b.parentId ? '  └ ' : ''}
+                {b.name} · {b.memberCount} người
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect icon={Sparkles} value={dimGeneration ?? ''} active={dimGeneration != null} onChange={(v) => setDimGeneration(v ? Number(v) : null)} title="Làm nổi bật một đời">
+            <option value="">Nổi bật đời…</option>
+            {index.generations.map((g) => (
+              <option key={g} value={g}>
+                Nổi bật đời {g}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect
+            icon={Layers}
+            value={maxGeneration ?? ''}
+            active={maxGeneration != null}
+            onChange={(v) => {
+              setMaxGeneration(v ? Number(v) : null);
+              refit();
+            }}
+            title="Chỉ hiển thị tới đời"
+          >
+            <option value="">Hiện mọi đời</option>
+            {index.generations.map((g) => (
+              <option key={g} value={g}>
+                Hiện tới đời {g}
+              </option>
+            ))}
+          </FilterSelect>
+          {filtersActive && (
+            <button
+              onClick={() => {
+                setRootId(null);
+                setDimGeneration(null);
+                setMaxGeneration(null);
+                refit();
+              }}
+              className="flex min-h-9 items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-medium text-lacquer-700 transition hover:bg-lacquer-50"
+            >
+              <X size={13} /> Bỏ lọc
+            </button>
+          )}
+        </div>
+        {pathIds && (
+          <div className="pop-in pointer-events-auto flex max-w-full items-center gap-2 rounded-xl bg-[#276746] py-1 pr-1 pl-3 text-xs text-white shadow-sm sm:text-sm">
+            <Route size={15} className="shrink-0" aria-hidden="true" />
+            <span role="status">Đang hiển thị đường quan hệ</span>
+            <button onClick={() => setPathIds(null)} className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/15 hover:bg-white/25" aria-label="Tắt đường quan hệ">
+              <X size={13} />
+            </button>
+          </div>
         )}
       </div>
 
@@ -206,7 +216,7 @@ export default function TreePage({ request, visible = true }) {
           [ChevronsDownUp, 'Thu gọn tất cả', collapseAll],
         ].map((item, i) =>
           item ? (
-            <button key={item[1]} onClick={item[2]} title={item[1]} aria-label={item[1]} className="p-2.5 text-[#6b5d4f] transition hover:bg-lacquer-50 hover:text-lacquer-700">
+            <button key={item[1]} onClick={item[2]} title={item[1]} aria-label={item[1]} className="grid size-11 place-items-center text-[#6b5d4f] transition hover:bg-lacquer-50 hover:text-lacquer-700">
               {createElement(item[0], { size: 17 })}
             </button>
           ) : (
@@ -237,15 +247,6 @@ export default function TreePage({ request, visible = true }) {
         )}
       </div>
 
-      {pathIds && (
-        <div className="pop-in absolute top-16 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#2f8a5b] whitespace-nowrap sm:top-4 py-1.5 pr-1.5 pl-4 text-sm text-white shadow-lg">
-          <Route size={15} /> Đang hiển thị đường quan hệ
-          <button onClick={() => setPathIds(null)} className="rounded-full bg-white/15 p-1 hover:bg-white/25" aria-label="Tắt">
-            <X size={13} />
-          </button>
-        </div>
-      )}
-
       {selectedId && (
         <MemberDrawer
           memberId={selectedId}
@@ -272,15 +273,15 @@ function FilterSelect({ icon: Icon, value, onChange, active, title, children }) 
   return (
     <label
       title={title}
-      className={`relative flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl py-1.5 pr-7 pl-2.5 text-[13px] whitespace-nowrap transition ${
+      className={`relative flex min-h-9 min-w-0 max-w-full cursor-pointer items-center gap-1.5 rounded-xl py-1.5 pr-9 pl-2.5 text-[13px] whitespace-nowrap transition ${
         active ? 'bg-lacquer-50 font-medium text-lacquer-800 ring-1 ring-lacquer-200' : 'text-[#5b4e41] hover:bg-paper-dark/70'
       }`}
     >
-      <Icon size={15} className={active ? 'text-lacquer-600' : 'text-[#a3957f]'} />
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="cursor-pointer appearance-none bg-transparent outline-none">
+      <Icon size={15} aria-hidden="true" className={`shrink-0 ${active ? 'text-lacquer-600' : 'text-[#a3957f]'}`} />
+      <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={title} className="min-w-0 cursor-pointer appearance-none truncate bg-transparent">
         {children}
       </select>
-      <ChevronDown size={14} className="pointer-events-none absolute right-2 text-[#a3957f]" />
+      <ChevronDown size={14} aria-hidden="true" className="pointer-events-none absolute right-3 text-[#a3957f]" />
     </label>
   );
 }
