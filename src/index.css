@@ -463,6 +463,9 @@ body {
     inset -6px -6px 13px var(--neu-light);
   outline-color: rgb(211 139 60 / 0.55);
 }
+.neu-field input:focus-visible {
+  outline: none;
+}
 .neu-field.is-error {
   outline-color: rgb(224 87 74 / 0.6);
 }
