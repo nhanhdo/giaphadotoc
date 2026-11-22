@@ -5,9 +5,12 @@
  * có khung viền & tiêu đề trang trọng; sau đó rasterize qua <canvas> (PNG/PDF) hoặc tải thẳng SVG.
  */
 import * as d3 from 'd3';
+import printHeader from '../assets/print-header.png?inline';
 import { canChiYear, solarToLunar, todayVN } from '@shared/lunar.js';
 import { buildHierarchy } from './treeModel.js';
 import { FONT, SERIF, drawStaticTree, layout, staticBounds, visibleNodes } from './treeRender.js';
+
+export const DEFAULT_PRINT_TITLE = 'Gia phả Đỗ Tộc';
 
 export const PAPERS = {
   A0: [841, 1189],
@@ -26,7 +29,7 @@ const MAX_AREA = 250_000_000;
  * opts: { index, rootId, title, subtitle, paper: 'A0'|'A1'|...|'auto', orientation: 'auto'|'landscape'|'portrait' }
  * Trả về { svg (string), widthMm, heightMm, nodeCount }
  */
-export function buildPrintableSvg({ index, rootId = null, title, subtitle, paper = 'A1', orientation = 'auto' }) {
+export function buildPrintableSvg({ index, rootId = null, title = DEFAULT_PRINT_TITLE, subtitle, paper = 'A1', orientation = 'auto' }) {
   const root = layout(buildHierarchy(index, { rootId, collapsed: new Set() }));
   const nodes = visibleNodes(root);
   const b = staticBounds(root);
@@ -64,15 +67,35 @@ export function buildPrintableSvg({ index, rootId = null, title, subtitle, paper
       .attr('transform', `rotate(45 ${cx} ${cy})`).attr('fill', '#b45309');
   }
 
-  // Tiêu đề
-  const titleSize = unit * 4.2;
-  svg.append('text').attr('x', W / 2).attr('y', m2 + unit * 7).attr('text-anchor', 'middle').attr('font-size', titleSize)
-    .attr('font-family', SERIF).attr('font-weight', 700).attr('letter-spacing', unit * 0.4).attr('fill', '#7f1d1d').text(title.toUpperCase());
-  if (subtitle)
-    svg.append('text').attr('x', W / 2).attr('y', m2 + unit * 7 + titleSize * 0.85).attr('text-anchor', 'middle')
+  // Đầu trang: minh họa nhúng trong SVG để file xuất tự chứa hình.
+  const bannerWidth = Math.min(W - 2 * (m2 + unit * 2), unit * 86);
+  const bannerHeight = bannerWidth / 3;
+  const bannerTop = m2 + unit * 1.5;
+  svg.append('image')
+    .attr('x', (W - bannerWidth) / 2).attr('y', bannerTop)
+    .attr('width', bannerWidth).attr('height', bannerHeight)
+    .attr('href', printHeader);
+
+  const heading = svg.append('text')
+    .attr('x', W / 2).attr('y', bannerTop + bannerHeight * 0.5)
+    .attr('text-anchor', 'middle').attr('dominant-baseline', 'central')
+    .attr('font-family', SERIF).attr('font-weight', 700)
+    .attr('font-size', bannerWidth * 0.028).attr('fill', '#ffe396')
+    .text(title);
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `700 ${heading.attr('font-size')}px ${SERIF}`;
+  const headingWidth = ctx.measureText(title).width;
+  const panelWidth = bannerWidth * 0.24;
+  if (headingWidth > panelWidth) heading.attr('font-size', Number(heading.attr('font-size')) * panelWidth / headingWidth);
+
+  const captionY = bannerTop + bannerHeight + unit * 2.7;
+  if (subtitle) {
+    svg.append('text').attr('x', W / 2).attr('y', captionY).attr('text-anchor', 'middle')
       .attr('font-size', unit * 1.8).attr('font-style', 'italic').attr('fill', '#78350f').text(subtitle);
-  svg.append('line').attr('x1', W * 0.3).attr('x2', W * 0.7).attr('y1', m2 + unit * 13).attr('y2', m2 + unit * 13)
-    .attr('stroke', '#b45309').attr('stroke-width', unit * 0.2);
+  }
+  const dividerY = subtitle ? captionY + unit * 2 : bannerTop + bannerHeight + unit * 1.5;
+  svg.append('line').attr('x1', W / 2 - bannerWidth * 0.18).attr('x2', W / 2 + bannerWidth * 0.18)
+    .attr('y1', dividerY).attr('y2', dividerY).attr('stroke', '#b45309').attr('stroke-width', unit * 0.18);
 
   // Chân trang: ngày lập (Dương + Âm lịch)
   const t = todayVN();
@@ -84,7 +107,7 @@ export function buildPrintableSvg({ index, rootId = null, title, subtitle, paper
     .text('Chú giải: viền xanh – Nam · viền hồng – Nữ · băng đen góc thẻ – đã mất · nét đứt – con nuôi');
 
   // Vùng vẽ cây
-  const top = m2 + unit * 16;
+  const top = dividerY + unit * 3;
   const bottom = H - m2 - unit * 5;
   const left = m2 + unit * 2;
   const right = W - m2 - unit * 2;
@@ -92,7 +115,7 @@ export function buildPrintableSvg({ index, rootId = null, title, subtitle, paper
   const ah = bottom - top;
   const k = Math.min(aw / b.w, ah / b.h);
   const tx = left + (aw - b.w * k) / 2 - b.x0 * k;
-  const ty = top + (ah - b.h * k) / 2 - b.y0 * k;
+  const ty = top + (ah - b.h * k) / 3 - b.y0 * k;
   drawStaticTree(svg.append('g').attr('transform', `translate(${tx},${ty}) scale(${k})`), root);
 
   return { svg: svg.node().outerHTML, widthMm: wMm, heightMm: hMm, nodeCount: nodes.length, scale: k };

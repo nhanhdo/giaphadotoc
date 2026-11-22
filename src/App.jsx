@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { api, auth } from './api.js';
 import { AppContext } from './context.js';
@@ -8,7 +8,6 @@ import AppShell from './components/AppShell.jsx';
 import Seal from './components/Seal.jsx';
 import { notifyUpcoming } from './components/MemorialPanel.jsx';
 import KinshipModal, { KinshipCalculator } from './components/KinshipModal.jsx';
-import ExportModal from './components/ExportModal.jsx';
 import MemberFormModal from './components/MemberFormModal.jsx';
 import SuggestionsPanel from './components/SuggestionsPanel.jsx';
 import { Button } from './components/ui.jsx';
@@ -18,6 +17,8 @@ import TreePage from './pages/TreePage.jsx';
 import MembersPage from './pages/MembersPage.jsx';
 import MemorialsPage from './pages/MemorialsPage.jsx';
 import AccountsPage from './pages/AccountsPage.jsx';
+
+const ExportModal = lazy(() => import('./components/ExportModal.jsx'));
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -239,7 +240,9 @@ function AuthedApp({ user, clanName, onLogout }) {
         />
       )}
       {exportOpts && index && (
-        <ExportModal index={index} clanName={clanName} currentRootId={null} selectedId={exportOpts.selectedId ?? null} onClose={() => setExportOpts(null)} />
+        <Suspense fallback={<div role="status" className="fixed inset-0 z-50 grid place-items-center bg-ink/40 text-white">Đang tải bản xem trước…</div>}>
+          <ExportModal index={index} currentRootId={null} selectedId={exportOpts.selectedId ?? null} onClose={() => setExportOpts(null)} />
+        </Suspense>
       )}
       {form && (
         <MemberFormModal

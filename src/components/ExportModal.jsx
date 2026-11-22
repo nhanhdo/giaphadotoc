@@ -4,12 +4,12 @@ import {
   TriangleAlert, Users, Wand2, X,
 } from 'lucide-react';
 import { Button, ErrorBox, Modal, inputCls } from './ui.jsx';
-import { PAPERS, buildPrintableSvg, exportTree } from '../lib/exportTree.js';
+import { DEFAULT_PRINT_TITLE, PAPERS, buildPrintableSvg, exportTree } from '../lib/exportTree.js';
 
 const FORMATS = [
   { id: 'pdf', label: 'PDF', icon: FileText, desc: 'In giấy, gửi tiệm in' },
   { id: 'png', label: 'Ảnh PNG', icon: FileImage, desc: 'Chia sẻ Zalo, Facebook' },
-  { id: 'svg', label: 'SVG', icon: PenTool, desc: 'Vector – phóng to không vỡ' },
+  { id: 'svg', label: 'SVG', icon: PenTool, desc: 'Chữ và cây dạng vector' },
 ];
 const QUALITY = [
   { dpi: 150, label: 'Bạt / vải', desc: 'xem từ xa' },
@@ -37,14 +37,14 @@ const TONE = {
   bad: 'border-[#f3c4bd] bg-[#fdeeeb] text-[#a33a2e]',
 };
 
-export default function ExportModal({ index, clanName, currentRootId, selectedId, onClose }) {
+export default function ExportModal({ index, currentRootId, selectedId, onClose }) {
   const selected = selectedId ? index.byId.get(selectedId) : null;
   const [scope, setScope] = useState(currentRootId ? 'view' : 'all');
   const [format, setFormat] = useState('pdf');
   const [paper, setPaper] = useState('A0');
   const [orientation, setOrientation] = useState('auto');
   const [dpi, setDpi] = useState(200);
-  const [title, setTitle] = useState(`Gia phả ${clanName}`);
+  const [title, setTitle] = useState(DEFAULT_PRINT_TITLE);
   const [subtitle, setSubtitle] = useState('Uống nước nhớ nguồn – Ăn quả nhớ kẻ trồng cây');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -268,7 +268,7 @@ export default function ExportModal({ index, clanName, currentRootId, selectedId
             </div>
           )}
           {format === 'svg' && (
-            <p className="mt-2 text-xs text-muted">SVG là định dạng vector: tiệm in có thể in ở mọi kích thước mà chữ vẫn sắc nét.</p>
+            <p className="mt-2 text-xs text-muted">Chữ và cây gia phả ở dạng vector. Họa tiết đầu trang là ảnh PNG nhúng trong file.</p>
           )}
         </div>
       </div>
