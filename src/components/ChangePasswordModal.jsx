@@ -3,7 +3,7 @@ import { KeyRound, Loader2 } from 'lucide-react';
 import { api } from '../api.js';
 import { Button, ErrorBox, Field, Modal, inputCls } from './ui.jsx';
 
-export default function ChangePasswordModal({ onClose }) {
+export default function ChangePasswordModal({ onClose, onLogout }) {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -30,11 +30,11 @@ export default function ChangePasswordModal({ onClose }) {
     <Modal
       title="Đổi mật khẩu"
       icon={<KeyRound size={18} />}
-      onClose={onClose}
+      onClose={done ? onLogout : onClose}
       width="max-w-md"
       footer={
         done ? (
-          <Button onClick={onClose}>Đóng</Button>
+          <Button onClick={onLogout}>Đăng nhập lại</Button>
         ) : (
           <>
             <Button variant="secondary" onClick={onClose}>
@@ -48,7 +48,7 @@ export default function ChangePasswordModal({ onClose }) {
       }
     >
       {done ? (
-        <p className="text-sm text-ink">Đã đổi mật khẩu thành công.</p>
+        <p className="text-sm text-ink">Đã đổi mật khẩu thành công. Vui lòng đăng nhập lại bằng mật khẩu mới.</p>
       ) : (
         <form id="pw-form" onSubmit={submit} className="space-y-4">
           <ErrorBox error={error} />

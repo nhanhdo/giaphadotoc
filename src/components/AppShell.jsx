@@ -338,7 +338,7 @@ export default function AppShell({ route, pendingCount, onLogout, children }) {
         </div>
       </nav>
 
-      {changePw && <ChangePasswordModal onClose={() => setChangePw(false)} />}
+      {changePw && <ChangePasswordModal onClose={() => setChangePw(false)} onLogout={onLogout} />}
     </div>
   );
 }
